@@ -1,2 +1,3 @@
-# cantoria
-Site dynamique cast bilingue
+# 🎶 Cantoria Vite
+Plateforme numérique du Chœur Artistique & Spirituel de Tanà (C.A.S.T.), construite avec Vite + React...
+(texte complet du README ici)
