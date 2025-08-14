@@ -1,25 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import '../styles/markdown.css';
+import MarkdownRenderer from './MarkdownRenderer';
 
-const MarkdownPage = () => {
-  const { slug } = useParams();
+// Vite raw loader fallback
+const rawMarkdownFiles = import.meta.glob('../docs/*.md', { as: 'raw' });
+// Vite-plugin-md loader (if compiled as component)
+const mdComponents = import.meta.glob('../docs/*.md');
+
+export default function MarkdownPage({ slug = 'intro' }) {
   const [content, setContent] = useState('');
+  const [Component, setComponent] = useState(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    import(`../../docs/${slug}.md`)
-      .then(res => fetch(res.default))
-      .then(res => res.text())
-      .then(setContent)
-      .catch(() => setContent('# Page non trouvée'));
+    const filePath = `../docs/${slug}.md`;
+
+    if (mdComponents[filePath]) {
+      // Try to load as React component
+      mdComponents[filePath]()
+        .then(mod => setComponent(() => mod.default))
+        .catch(() => setError(true));
+    } else if (rawMarkdownFiles[filePath]) {
+      // Fallback to raw content
+      rawMarkdownFiles[filePath]()
+        .then(setContent)
+        .catch(() => setError(true));
+    } else {
+      setError(true);
+    }
   }, [slug]);
 
-  return (
-    <div className="markdown-container">
-      <ReactMarkdown>{content}</ReactMarkdown>
-    </div>
-  );
-};
+  if (error) {
+    return (
+      <div className="markdown-error">
+        <h2>Contenu introuvable</h2>
+        <p>Aucun fichier Markdown trouvé pour <code>{slug}</code>.</p>
+      </div>
+    );
+  }
 
-export default MarkdownPage;
+  if (Component) {
+    return <Component />;
+  }
+
+  return <MarkdownRenderer content={content} />;
+}

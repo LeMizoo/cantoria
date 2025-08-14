@@ -33,6 +33,7 @@
     "globals": "^16.3.0",
     "postcss": "^8.5.6",
     "vite": "^7.1.0",
+    "vite-plugin-md": "^0.22.5",
     "vitest": "^3.2.4"
   }
 }
